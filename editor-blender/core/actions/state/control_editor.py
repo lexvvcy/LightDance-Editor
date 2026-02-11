@@ -379,7 +379,8 @@ async def delete_control_frame():
         f"has_hidden={any(not v for v in show_dancer_dict.values())}"
     )
 
-    # Check: do non-displayed (hidden) dancers have any non-None status?
+    # Check: do non-displayed (hidden) dancers have any real effect?
+    # "no effect" = None OR alpha == 0
     has_hidden_effect = False
     for dancer_name in state.dancer_names:
         if show_dancer_dict.get(dancer_name, False):
@@ -393,9 +394,9 @@ async def delete_control_frame():
                 has_hidden_effect = True
                 break
         else:
-            # New table: check for non-None parts
+            # New table: None or alpha==0 both count as "no effect"
             for ctrl_data in dancer_status.values():
-                if ctrl_data is not None:
+                if ctrl_data is not None and ctrl_data.part_data.alpha != 0:
                     has_hidden_effect = True
                     break
         if has_hidden_effect:
