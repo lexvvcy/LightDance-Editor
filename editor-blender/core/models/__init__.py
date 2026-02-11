@@ -311,7 +311,6 @@ class CopiedType(Enum):
 @dataclass
 class CopiedPartData:
     alpha: int
-    fade: bool
     color: str | None = None
     effect: str | None = None
     led_status: list[tuple[int, int]] | None = None
@@ -321,11 +320,19 @@ class CopiedPartData:
 class CopiedDancerData:
     name: DancerName
     model: ModelName
-    parts: dict[PartName, CopiedPartData | None]
+    parts: dict[PartName, CopiedPartData]
 
 
 @dataclass
 class Clipboard:
+    type: CopiedType
+    control_frame: ControlMapElement | None = None
+    pos_frame: PosMapElement | None = None
+    dancer: CopiedDancerData | None = None
+
+
+@dataclass
+class Clipboard_MODIFIED:
     type: CopiedType
     control_frame: ControlMapElement_MODIFIED | None = None
     pos_frame: PosMapElement | None = None
@@ -444,8 +451,10 @@ class State:
     current_led_index: int
 
     # NOTE: Maybe we don't need these
+    current_fade: bool
     current_status: ControlMapStatus
     current_led_status: ControlMapLEDStatus
+    current_pos: PosMapStatus
 
     # TODO implement these
     current_status_MODIFIED: ControlMapStatus_MODIFIED
@@ -455,9 +464,6 @@ class State:
     current_editing_frame: int
     current_editing_detached: bool
     current_editing_frame_synced: bool
-
-    current_selected_obj_name: DancerName | None
-    pinned_objects: list[DancerName] | list[PartName]
 
     edit_state: EditMode
     editor: Editor
@@ -470,7 +476,8 @@ class State:
     selected_obj_type: SelectedPartType | None
 
     clipboard: Clipboard
-    # # TODO implement these
+    # TODO implement these
+    clipboard_MODIFIED: Clipboard_MODIFIED
 
     models: Models
     model_names: list[ModelName]
