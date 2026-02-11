@@ -182,3 +182,65 @@ def mock_sub_control_map(
             update_control(id, new_ctrl_frame)  # type: ignore
         case SubType.DeleteFrames:
             delete_control(id)
+
+
+def inject_partial_test_frames():
+    """Insert test frames with partial data for testing partial delete.
+
+    Creates 2 frames:
+      - Frame A (start=99999): dancer 0,1 have data, dancer 2,3 = None
+      - Frame B (start=99998): dancer 0 has data, dancer 1,2,3 = None
+
+    Call this after init (e.g. after tmp_format_conv) to have ready-made
+    partial frames for testing delete logic.
+    """
+    from ....core.log import logger
+
+    fallback_color_id = next(iter(state.color_map), 0)
+    cur_max_id = max(state.control_record) if state.control_record else 0
+
+    for frame_idx, (start_time, dancers_with_data) in enumerate(
+        [(1500, [0, 1]), (3500, [0])]
+    ):
+        fid = cur_max_id + 1 + frame_idx
+        ctrl_stat: ControlMapStatus_MODIFIED = {}
+        for di, dancer_name in enumerate(state.dancer_names):
+            ctrl_stat[dancer_name] = {}
+            for part_name in state.dancers[dancer_name]:
+                if di in dancers_with_data:
+                    if state.part_type_map[part_name] == PartType.FIBER:
+                        ctrl_stat[dancer_name][part_name] = CtrlData(
+                            part_data=FiberData(color_id=fallback_color_id, alpha=128),
+                            bulb_data=[],
+                            fade=False,
+                        )
+                    else:
+                        ctrl_stat[dancer_name][part_name] = CtrlData(
+                            part_data=LEDData(effect_id=-1, alpha=128),
+                            bulb_data=[],
+                            fade=False,
+                        )
+                else:
+                    ctrl_stat[dancer_name][part_name] = None
+
+        frame = ControlMapElement_MODIFIED(
+            start=start_time,
+            fade_for_new_status=False,
+            rev=Revision(meta=0, data=0),
+            status=ctrl_stat,
+        )
+        # Write directly to state (bypassing add_control which needs state.ready)
+        state.control_map[fid] = frame  # type: ignore
+        state.control_map_MODIFIED[fid] = frame
+        logger.info(
+            f"[inject_partial_test] id={fid} start={start_time} "
+            f"dancers_with_data={dancers_with_data}"
+        )
+
+    # Rebuild control_record sorted by start time
+    control_record = list(state.control_map.keys())
+    control_record.sort(key=lambda _id: state.control_map[_id].start)
+    state.control_record = control_record
+    state.control_start_record = [
+        state.control_map[_id].start for _id in control_record
+    ]
