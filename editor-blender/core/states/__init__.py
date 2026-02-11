@@ -1,5 +1,6 @@
 from ..models import (
     Clipboard,
+    Clipboard_MODIFIED,
     ColorMapPending,
     ColorMapUpdates,
     ControlMapUpdates,
@@ -64,8 +65,10 @@ state = State(
     current_control_index=0,
     current_pos_index=0,
     current_led_index=0,
+    current_fade=False,
     current_status={},
     current_led_status={},
+    current_pos={},
     #
     current_status_MODIFIED={},
     current_pos_MODIFIED={},
@@ -76,17 +79,16 @@ state = State(
     current_editing_frame=0,
     current_editing_detached=False,
     current_editing_frame_synced=True,
-    current_selected_obj_name=None,
-    pinned_objects=[],
     edit_state=EditMode.IDLE,
     editor=Editor.CONTROL_EDITOR,
-    local_view=False,
     editing_data=EditingData(frame_id=-1, start=0, index=0),
     shifting=False,
+    local_view=False,
     selection_mode=SelectMode.PART_MODE,
     selected_obj_names=[],
     selected_obj_type=None,
     clipboard=Clipboard(CopiedType.NONE),
+    clipboard_MODIFIED=Clipboard_MODIFIED(CopiedType.NONE),
     models={},
     model_names=[],
     models_array=[],
@@ -115,3 +117,7 @@ state = State(
     music_beats=[],
     scene_start_point=[],
 )
+
+# Fields used by other modules but not declared in State dataclass
+state.current_selected_obj_name = None  # type: ignore
+state.pinned_objects = []  # type: ignore
