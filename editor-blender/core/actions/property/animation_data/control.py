@@ -37,7 +37,10 @@ from ....utils.notification import notify
 from .utils import ensure_action, ensure_curve, get_keyframe_points
 
 
-def reset_control_frames_and_fade_sequence(fade_seq: list[tuple[int, bool]]):
+def reset_control_frames_and_fade_sequence(
+    fade_seq: list[tuple[int, bool]],
+    ghost_flags: list[bool] | None = None,
+):
     if not bpy.context:
         return
     scene = bpy.context.scene
@@ -52,11 +55,21 @@ def reset_control_frames_and_fade_sequence(fade_seq: list[tuple[int, bool]]):
         point = kpoints_list[i]
         point.co = start, start
 
-        if i > 0 and fade_seq[i - 1][1]:
+        is_ghost = ghost_flags and ghost_flags[i]
+        prev_is_ghost = ghost_flags and i > 0 and ghost_flags[i - 1]
+
+        # Apply fade from previous frame, but NOT if current or previous is ghost
+        if i > 0 and fade_seq[i - 1][1] and not is_ghost and not prev_is_ghost:
             point.co = start, kpoints_list[i - 1].co[1]
 
         point.interpolation = "CONSTANT"
         point.select_control_point = False
+
+        # Ghost frame: displayed dancers all None → gray icon
+        if is_ghost:
+            point.type = "MOVING_HOLD"
+        else:
+            point.type = "KEYFRAME"
 
     renew_ctrl_test_frame()
 
@@ -327,7 +340,24 @@ def init_ctrl_keyframes_from_state(dancers_reset: list[bool] | None = None):
         fade_seq = [
             (frame.start, frame.fade_for_new_status) for _, frame in filtered_ctrl_map
         ]
-        reset_control_frames_and_fade_sequence(fade_seq)
+        # Check which frames are "ghost" (all displayed dancers have no effect)
+        # "no effect" = None OR alpha == 0
+        ghost_flags: list[bool] = []
+        show_dancer_dict = dict(zip(state.dancer_names, state.show_dancers))
+        for _, frame in filtered_ctrl_map:
+            all_no_effect = True
+            for dancer_name in state.dancer_names:
+                if not show_dancer_dict.get(dancer_name, False):
+                    continue  # skip hidden dancers
+                dancer_status = frame.status.get(dancer_name, {})
+                for part_data in dancer_status.values():
+                    if part_data is not None and part_data.part_data.alpha != 0:
+                        all_no_effect = False
+                        break
+                if not all_no_effect:
+                    break
+            ghost_flags.append(all_no_effect)
+        reset_control_frames_and_fade_sequence(fade_seq, ghost_flags)
 
 
 """
