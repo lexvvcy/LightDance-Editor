@@ -74,8 +74,7 @@ def _rough_conv_control_map_from_old():
 
 # Override state.control_map_MODIFIED to state.control_map
 def sync_new_ctrl_map_from_old():
-    # _rough_conv_control_map_from_old()
-    pass
+    _rough_conv_control_map_from_old()
 
 
 # Override state.pos_map_MODIFIED to state.pos_map
