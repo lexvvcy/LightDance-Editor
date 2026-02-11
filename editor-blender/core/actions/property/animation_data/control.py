@@ -169,10 +169,9 @@ def init_ctrl_single_object_action(
     frames: list[tuple[int, bool, tuple[float, float, float]]],
     ctrl_frame_number: int,
 ):
+    actual_count = len(frames)
     curves = [
-        ensure_curve(
-            action, "color", index=d, keyframe_points=ctrl_frame_number, clear=True
-        )
+        ensure_curve(action, "color", index=d, keyframe_points=actual_count, clear=True)
         for d in range(3)
     ]
     kpoints_lists = [get_keyframe_points(curve)[1] for curve in curves]
