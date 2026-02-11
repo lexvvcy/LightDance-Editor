@@ -430,11 +430,6 @@ async def init_control_map():
 
     sync_new_ctrl_map_from_old()
 
-    # FIXME: delete this after test – inject partial frames for testing
-    from ....core.utils.for_dev_only.mock_sub_map import inject_partial_test_frames
-
-    inject_partial_test_frames()
-
     state.current_control_index = 0
     update_current_status_by_index()
 

@@ -1,29 +1,24 @@
-
-//fn
-//6
-
 f
-1000 3000 4000 6000 7000 9000
-
-//pn
+1000 2000 3000 4000 5000 6000
 
 p
-O X X O O O
-2 3
-0 2 4
+O O O O O O
+O O O O O O
+O O O O O O
+O O O O O O
 
-//cn
-
-c 
-X O X
+c
+X O X X X O
 >
-O X X O O O
-// 0 2- 5
-// 0 1 2 4
+O O O O O O
+0 1 2 3 4 5
+O O O O O O
 >
-0 1- 3
-> 
-2 3 4
-
-
-
+O O O O O O
+0 1 2 3 4 5
+O O O O O O
+>
+X X O O O O
+2 3 4 5
+>
+X X X O X X

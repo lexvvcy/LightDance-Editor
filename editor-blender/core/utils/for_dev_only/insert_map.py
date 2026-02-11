@@ -232,6 +232,8 @@ def load_default_map() -> Optional[str]:
 
     state.pos_map_MODIFIED = position_frame
     state.control_map_MODIFIED = control_frame
+    # Keep control_map in sync so delete/save can find frames by ID
+    state.control_map = dict(control_frame)  # type: ignore
     state.pos_record = list(state.pos_map_MODIFIED.keys())
     state.control_record = list(state.control_map_MODIFIED.keys())
     state.pos_start_record = [item[1].start for item in state.pos_map_MODIFIED.items()]
