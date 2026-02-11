@@ -2,7 +2,7 @@ import bpy
 
 from ....properties.types import LightType
 from ...log import logger
-from ...models import ColorID, EditMode, LEDData
+from ...models import ColorID, CtrlData, EditMode, LEDData
 from ...states import state
 from ...utils.convert import gradient_to_rgb_float, rgba_to_float
 
@@ -73,17 +73,28 @@ def update_current_effect(self: bpy.types.Object, context: bpy.types.Context):
             prev_control_id = state.control_record[control_index - 1]
             prev_control_map = state.control_map[prev_control_id]
 
-            ld_dancer_name: str = getattr(self, "ld_dancer_name")
-            prev_dancer_status = prev_control_map.status[ld_dancer_name]
+            prev_dancer_status = prev_control_map.status.get(ld_dancer_name)
+            if prev_dancer_status is None:
+                control_index -= 1
+                continue
 
-            ld_part_name: str = getattr(self, "ld_part_name")
-            prev_part_status = prev_dancer_status[ld_part_name]
+            prev_part_status = prev_dancer_status.get(ld_part_name)
+            if prev_part_status is None:
+                control_index -= 1
+                continue
 
-            if not isinstance(prev_part_status, LEDData):
-                raise Exception("LEDData expected")
+            # Handle new table (CtrlData wrapper) and old table (raw LEDData)
+            if isinstance(prev_part_status, CtrlData):
+                prev_part_data = prev_part_status.part_data
+            else:
+                prev_part_data = prev_part_status
 
-            if prev_part_status.effect_id != -1:
-                effect_id = prev_part_status.effect_id
+            if not isinstance(prev_part_data, LEDData):
+                control_index -= 1
+                continue
+
+            if prev_part_data.effect_id != -1:
+                effect_id = prev_part_data.effect_id
                 break
 
             control_index -= 1
