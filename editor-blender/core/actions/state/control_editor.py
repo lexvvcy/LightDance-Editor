@@ -373,7 +373,9 @@ async def delete_control_frame():
 
     show_dancer_dict = dict(zip(state.dancer_names, state.show_dancers))
     logger.info(
-        f"[delete_control_frame] id={id}, show_dancers={state.show_dancers}, "
+        f"[delete_control_frame] id={id}, start={frame.start}, "
+        f"frame_current={bpy.context.scene.frame_current}, index={index}, "
+        f"show_dancers={state.show_dancers}, "
         f"has_hidden={any(not v for v in show_dancer_dict.values())}"
     )
 

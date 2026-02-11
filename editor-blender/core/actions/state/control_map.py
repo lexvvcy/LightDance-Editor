@@ -166,7 +166,33 @@ def apply_control_map_updates():
         f"control_map_MODIFIED keys={sorted(state.control_map_MODIFIED.keys())}"
     )
 
+    # Dump control map for debugging
+    _dump_control_map()
+
     # Full refresh: scene-level markers + per-part animation keyframes
     init_ctrl_keyframes_from_state()
 
     redraw_area({"VIEW_3D", "DOPESHEET_EDITOR"})
+
+
+def _dump_control_map():
+    """Print a concise summary of control_map_MODIFIED for debugging."""
+    for map_id in sorted(
+        state.control_map_MODIFIED.keys(),
+        key=lambda k: state.control_map_MODIFIED[k].start,
+    ):
+        frame = state.control_map_MODIFIED[map_id]
+        parts_summary: list[str] = []
+        for dancer_name, parts in frame.status.items():
+            none_count = sum(1 for v in parts.values() if v is None)
+            total = len(parts)
+            if none_count == total:
+                parts_summary.append(f"{dancer_name}=ALL_NONE")
+            elif none_count > 0:
+                parts_summary.append(f"{dancer_name}={total - none_count}/{total}")
+            else:
+                parts_summary.append(f"{dancer_name}=ALL_SET")
+        logger.info(
+            f"[CTRL_MAP] id={map_id} start={frame.start} "
+            f"fade={frame.fade_for_new_status} | {', '.join(parts_summary)}"
+        )
